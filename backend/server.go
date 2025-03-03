@@ -6,10 +6,23 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/atselvan/pokeapi"
 	_ "github.com/lib/pq"
 )
+
+var connStr string
+
+func init() {
+	var host = os.Getenv("DB_HOST")
+
+	if host == "" {
+		host = "localhost"
+	}
+
+	connStr = fmt.Sprintf("user=postgres password=admin host=%v port=5432 dbname=postgres sslmode=disable", host)
+}
 
 func main() {
 
@@ -17,7 +30,7 @@ func main() {
 
 	http.HandleFunc("/", handler)
 	http.HandleFunc("/load", loadyes)
-	log.Fatal(http.ListenAndServe("localhost:8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +39,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func loadyes(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	connStr := "user=postgres password=admin host=localhost port=5432 dbname=postgres sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal("Error opening database:", err)
@@ -74,7 +86,6 @@ func run() {
 		log.Fatal(restErr)
 	}
 
-	connStr := "user=postgres password=admin host=localhost port=5432 dbname=postgres sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal("Error opening database:", err)
